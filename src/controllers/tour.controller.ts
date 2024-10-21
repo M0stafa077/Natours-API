@@ -23,7 +23,7 @@ export default class TourController {
                 } else {
                     sortOptions = "createdAt";
                 }
-                return TourModel.find(await getFilterOptions()).sort(
+                return await TourModel.find(await getFilterOptions()).sort(
                     sortOptions
                 );
             }
@@ -49,9 +49,9 @@ export default class TourController {
             return res.status(404).json({ status: "fail", message: err });
         }
     }
-    static createTour(req: Request, res: Response) {
+    static async createTour(req: Request, res: Response) {
         try {
-            const data = TourModel.create(req.body);
+            const data = await TourModel.create(req.body);
             return res.status(201).json({
                 status: "success",
                 results: 1,
