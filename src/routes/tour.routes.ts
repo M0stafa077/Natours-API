@@ -2,6 +2,9 @@ import { Router } from "express";
 import TourController from "../controllers/tour.controller";
 const router = Router();
 
+router
+    .route("/top-5-cheapest")
+    .get(TourController.topToursMiddleware, TourController.findAll);
 router.route("/").get(TourController.findAll).post(TourController.createTour);
 router
     .route("/:id")

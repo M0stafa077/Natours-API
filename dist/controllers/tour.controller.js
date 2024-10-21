@@ -13,20 +13,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const tour_model_1 = __importDefault(require("./../models/tour.model"));
+const apiFeatures_1 = __importDefault(require("../utils/apiFeatures"));
 class TourController {
     static findAll(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                function getFilterOptions() {
-                    return __awaiter(this, void 0, void 0, function* () {
-                        const queryObj = Object.assign({}, req.query);
-                        const excludedFields = ["page", "sort", "limit", "fields"];
-                        excludedFields.forEach((el) => delete queryObj[el]);
-                        const queryStr = JSON.stringify(queryObj);
-                        return JSON.parse(queryStr.replace(/\b(gt|gte|ls|lte)\b/g, (match) => `$${match}`));
-                    });
-                }
-                const data = yield tour_model_1.default.find(yield getFilterOptions());
+                const apiFeatures = new apiFeatures_1.default(tour_model_1.default.find(), req.query);
+                const features = apiFeatures
+                    .filter()
+                    .sort()
+                    .limitFields()
+                    .paginate();
+                const data = yield features.dbQuery;
                 return res.status(200).json({
                     status: "success",
                     results: data.length,
@@ -34,9 +32,17 @@ class TourController {
                 });
             }
             catch (err) {
-                return res.status(404).json({ status: "fail", message: err });
+                console.error(err);
+                return res
+                    .status(404)
+                    .json({ status: "fail", message: String(err) });
             }
         });
+    }
+    static topToursMiddleware(req, res, next) {
+        req.query.limit = "5";
+        req.query.sort = "-ratingsAverage,price";
+        next();
     }
     static findOne(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -54,17 +60,19 @@ class TourController {
         });
     }
     static createTour(req, res) {
-        try {
-            const data = tour_model_1.default.create(req.body);
-            return res.status(201).json({
-                status: "success",
-                results: 1,
-                data,
-            });
-        }
-        catch (err) {
-            return res.status(404).json({ status: "fail", message: err });
-        }
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const data = yield tour_model_1.default.create(req.body);
+                return res.status(201).json({
+                    status: "success",
+                    results: 1,
+                    data,
+                });
+            }
+            catch (err) {
+                return res.status(404).json({ status: "fail", message: err });
+            }
+        });
     }
     static updateTour(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
