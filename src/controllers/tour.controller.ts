@@ -16,7 +16,18 @@ export default class TourController {
                     )
                 );
             }
-            const data = await TourModel.find(await getFilterOptions());
+            async function getData() {
+                let sortOptions: string;
+                if (req.query.sort) {
+                    sortOptions = String(req.query.sort).split(",").join(" ");
+                } else {
+                    sortOptions = "createdAt";
+                }
+                return TourModel.find(await getFilterOptions()).sort(
+                    sortOptions
+                );
+            }
+            const data = await getData();
             return res.status(200).json({
                 status: "success",
                 results: data.length,
