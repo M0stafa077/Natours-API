@@ -1,41 +1,33 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import TourModel from "./../models/tour.model";
+import APIFeatures from "../utils/apiFeatures";
 
 export default class TourController {
     static async findAll(req: Request, res: Response) {
         try {
-            async function getFilterOptions() {
-                const queryObj = { ...req.query };
-                const excludedFields = ["page", "sort", "limit", "fields"];
-                excludedFields.forEach((el) => delete queryObj[el]);
-                const queryStr = JSON.stringify(queryObj);
-                return JSON.parse(
-                    queryStr.replace(
-                        /\b(gt|gte|ls|lte)\b/g,
-                        (match) => `$${match}`
-                    )
-                );
-            }
-            async function getData() {
-                let sortOptions: string;
-                if (req.query.sort) {
-                    sortOptions = String(req.query.sort).split(",").join(" ");
-                } else {
-                    sortOptions = "createdAt";
-                }
-                return await TourModel.find(await getFilterOptions()).sort(
-                    sortOptions
-                );
-            }
-            const data = await getData();
+            const apiFeatures = new APIFeatures(TourModel.find(), req.query);
+            const features = apiFeatures
+                .filter()
+                .sort()
+                .limitFields()
+                .paginate();
+            const data = await features.dbQuery;
             return res.status(200).json({
                 status: "success",
-                results: data.length,
+                results: (data as []).length,
                 data,
             });
         } catch (err) {
-            return res.status(404).json({ status: "fail", message: err });
+            console.error(err);
+            return res
+                .status(404)
+                .json({ status: "fail", message: String(err) });
         }
+    }
+    static topToursMiddleware(req: Request, res: Response, next: NextFunction) {
+        req.query.limit = "5";
+        req.query.sort = "-ratingsAverage,price";
+        next();
     }
     static async findOne(req: Request, res: Response) {
         try {
