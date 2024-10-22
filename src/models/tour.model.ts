@@ -1,5 +1,6 @@
-import { Aggregate, Query, Schema, model } from "mongoose";
+import { Query, Schema, model } from "mongoose";
 import slugify from "slugify";
+import AppError from "../utils/AppError";
 
 const toursSchema = new Schema({
     name: {
@@ -85,15 +86,16 @@ toursSchema.pre<Query<tour, tour>>("findOneAndUpdate", async function (next) {
     if (currentDoc) {
         if (update.priceDiscount && update.priceDiscount >= currentDoc.price) {
             next(
-                new Error(
-                    "Discount price should be less than the actual price."
+                new AppError(
+                    "Discount price should be less than the actual price.",
+                    404
                 )
             );
         } else {
             next();
         }
     } else {
-        next(new Error("Document not found."));
+        next(new AppError("Document not found.", 404));
     }
 });
 toursSchema.pre<Query<tour, tour>>(/^find/, function (next) {
