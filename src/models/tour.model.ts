@@ -1,4 +1,4 @@
-import { Query, Schema, model } from "mongoose";
+import { Aggregate, Query, Schema, model } from "mongoose";
 import slugify from "slugify";
 
 const toursSchema = new Schema({
@@ -76,6 +76,10 @@ toursSchema.pre<Query<tour, tour>>(/^find/, function (next) {
     next();
 });
 toursSchema.post(/^find/, function (docs, next) {
+    next();
+});
+toursSchema.pre("aggregate", function (next) {
+    this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
     next();
 });
 const Tour = model("Tour", toursSchema);
