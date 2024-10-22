@@ -8,6 +8,7 @@ type tour = {
     ratingsAverage?: number;
     ratingsQuantity?: number;
     price: number;
+    priceDiscount: number;
     summary: string;
     description?: string;
     imageCover: string;
