@@ -81,4 +81,35 @@ export default class TourController {
             return res.status(404).json({ status: "fail", message: err });
         }
     }
+    static async getToursStats(req: Request, res: Response) {
+        try {
+            const stats = await TourModel.aggregate([
+                {
+                    $match: { ratingsAverage: { $gte: 4.5 } },
+                },
+                {
+                    $group: {
+                        // Match the result (GROUP BY)
+                        _id: { $toUpper: "$difficulty" },
+                        toursCount: { $sum: 1 },
+                        avgRating: { $avg: "$ratingsAverage" },
+                        numRatings: { $sum: "$ratingsQuantity" },
+                        avgPrice: { $avg: "$price" },
+                        minPrice: { $min: "$price" },
+                        maxPrice: { $max: "$price" },
+                    },
+                },
+                {
+                    $sort: { avgPrice: 1 },
+                },
+            ]);
+            return res.status(200).json({
+                status: "success",
+                results: stats.length,
+                data: stats,
+            });
+        } catch (err) {
+            return res.status(404).json({ status: "fail", message: err });
+        }
+    }
 }

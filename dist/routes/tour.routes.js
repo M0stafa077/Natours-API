@@ -10,6 +10,7 @@ router
     .route("/top-5-cheapest")
     .get(tour_controller_1.default.topToursMiddleware, tour_controller_1.default.findAll);
 router.route("/").get(tour_controller_1.default.findAll).post(tour_controller_1.default.createTour);
+router.route("/stats").get(tour_controller_1.default.getToursStats);
 router
     .route("/:id")
     .get(tour_controller_1.default.findOne)

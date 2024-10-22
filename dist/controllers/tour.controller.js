@@ -104,5 +104,38 @@ class TourController {
             }
         });
     }
+    static getToursStats(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const stats = yield tour_model_1.default.aggregate([
+                    {
+                        $match: { ratingsAverage: { $gte: 4.5 } },
+                    },
+                    {
+                        $group: {
+                            _id: { $toUpper: "$difficulty" },
+                            toursCount: { $sum: 1 },
+                            avgRating: { $avg: "$ratingsAverage" },
+                            numRatings: { $sum: "$ratingsQuantity" },
+                            avgPrice: { $avg: "$price" },
+                            minPrice: { $min: "$price" },
+                            maxPrice: { $max: "$price" },
+                        },
+                    },
+                    {
+                        $sort: { avgPrice: 1 },
+                    },
+                ]);
+                return res.status(200).json({
+                    status: "success",
+                    results: stats.length,
+                    data: stats,
+                });
+            }
+            catch (err) {
+                return res.status(404).json({ status: "fail", message: err });
+            }
+        });
+    }
 }
 exports.default = TourController;
