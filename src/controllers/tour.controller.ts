@@ -67,7 +67,9 @@ export default class TourController {
                 .status(200)
                 .json({ status: "success", results: 1, data });
         } catch (err) {
-            return res.status(404).json({ status: "fail", message: err });
+            return res
+                .status(404)
+                .json({ status: "fail", message: String(err) });
         }
     }
     static async deleteTour(req: Request, res: Response) {
@@ -76,9 +78,14 @@ export default class TourController {
                 new: true,
                 runValidators: true,
             });
+            if (data === null) {
+                throw new Error("Document not found.");
+            }
             return res.status(204).json({ status: "success", data: {} });
         } catch (err) {
-            return res.status(404).json({ status: "fail", message: err });
+            return res
+                .status(404)
+                .json({ status: "fail", message: String(err) });
         }
     }
     static async getToursStats(req: Request, res: Response) {
