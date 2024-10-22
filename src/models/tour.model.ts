@@ -1,4 +1,5 @@
 import { Schema, model } from "mongoose";
+import slugify from "slugify";
 
 const toursSchema = new Schema({
     name: {
@@ -65,6 +66,10 @@ const toursSchema = new Schema({
         type: Boolean,
         default: false,
     },
+});
+toursSchema.pre("save", function (next) {
+    this.slug = slugify(this.name, { lower: true });
+    next();
 });
 const Tour = model("Tour", toursSchema);
 
