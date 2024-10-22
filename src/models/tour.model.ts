@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Query, Schema, model } from "mongoose";
 import slugify from "slugify";
 
 const toursSchema = new Schema({
@@ -69,6 +69,13 @@ const toursSchema = new Schema({
 });
 toursSchema.pre("save", function (next) {
     this.slug = slugify(this.name, { lower: true });
+    next();
+});
+toursSchema.pre<Query<tour, tour>>(/^find/, function (next) {
+    this.find({ secretTour: { $ne: true } }).select("-secretTour");
+    next();
+});
+toursSchema.post(/^find/, function (docs, next) {
     next();
 });
 const Tour = model("Tour", toursSchema);
