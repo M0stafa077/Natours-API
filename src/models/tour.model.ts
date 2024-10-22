@@ -7,6 +7,8 @@ const toursSchema = new Schema({
         required: [true, "A tour must have a name"],
         unique: true,
         trim: true,
+        maxlength: [40, "A tour name must not exceed 40 characters"],
+        minlength: [10, "A tour name must have 10 or more characters"],
     },
     slug: String,
     duration: {
@@ -41,6 +43,11 @@ const toursSchema = new Schema({
     },
     priceDiscount: {
         type: Number,
+        vlidate: {
+            validator: function (val: number) {
+                return val < (this as any).price;
+            },
+        },
     },
     summary: {
         type: String,
@@ -67,9 +74,27 @@ const toursSchema = new Schema({
         default: false,
     },
 });
-toursSchema.pre("save", function (next) {
+// [TODO] whreeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+toursSchema.pre<tour>("save", function (next) {
     this.slug = slugify(this.name, { lower: true });
     next();
+});
+toursSchema.pre<Query<tour, tour>>("findOneAndUpdate", async function (next) {
+    const currentDoc = await this.model.findOne(this.getQuery());
+    const update = this.getUpdate() as Partial<tour>;
+    if (currentDoc) {
+        if (update.priceDiscount && update.priceDiscount >= currentDoc.price) {
+            next(
+                new Error(
+                    "Discount price should be less than the actual price."
+                )
+            );
+        } else {
+            next();
+        }
+    } else {
+        next(new Error("Document not found."));
+    }
 });
 toursSchema.pre<Query<tour, tour>>(/^find/, function (next) {
     this.find({ secretTour: { $ne: true } }).select("-secretTour");
