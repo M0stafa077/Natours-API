@@ -9,6 +9,11 @@ import globalErrorHandler from "./controllers/error.controller";
 import AppError from "./utils/AppError";
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
+process.on("uncaughtException", (err: Error) => {
+    console.log("UNHANDLED REJECTION ❗❗");
+    console.error(err);
+    process.exit(1);
+});
 const app = express();
 app.use(express.json());
 if (process.env.NODE_ENV === "dev") {
