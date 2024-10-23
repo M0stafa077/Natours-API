@@ -32,6 +32,15 @@ app.get("*", (req: Request, res: Response, next: NextFunction) => {
 app.use(globalErrorHandler);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+});
+
+process.on("unhandledRejection", (err: Error) => {
+    console.error(err.name, "\n", err.message);
+    console.log("UNHANDLED REJECTION ❗❗");
+
+    server.close(() => {
+        process.exit(1);
+    });
 });
