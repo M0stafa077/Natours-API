@@ -32,9 +32,9 @@ export default function globalErrorHandler(
     console.log(err.stack);
     err.statusCode = err.statusCode || 500;
     err.status = err.status || "error";
-    if (process.env.NODE_ENVIRONMENT === "dev") {
+    if (process.env.NODE_ENV === "dev") {
         handleDevError(err, res);
-    } else if (process.env.NODE_ENVIRONMENT === "prod") {
+    } else if (process.env.NODE_ENV === "prod") {
         handleProdError(err, res);
     }
 }
