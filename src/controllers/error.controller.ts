@@ -1,6 +1,7 @@
 import AppError from "../utils/AppError";
 import { Request, Response, NextFunction } from "express";
 import { CastError, Error as MongooseError } from "mongoose";
+import mongoose from "mongoose";
 
 interface DuplicateKeyError extends MongooseError {
     keyPattern: Record<string, any>;
@@ -17,6 +18,10 @@ function handleDBDuplicateEntry(err: DuplicateKeyError) {
     const duplicatedValue = String(err.errorResponse?.errmsg).match(/"(.*?)"/);
     const errMessage = `Duplicate entry for field: ${duplicatedField}, with value: ${duplicatedValue?.[1]}`;
     return new AppError(errMessage, 400);
+}
+function handleDBValidationErrors(err: mongoose.Error.ValidationError) {
+    const errors = Object.values(err.errors).map((el: any) => el.message);
+    return new AppError(errors.join(". "), 400);
 }
 function handleDevError(err: AppError, res: Response) {
     return res.status(err.statusCode).json({
@@ -57,6 +62,8 @@ export default function globalErrorHandler(
             error = handleDBCastingError(error);
         } else if (err.code === 11000) {
             error = handleDBDuplicateEntry(error);
+        } else if (err?._message === "Validation failed") {
+            error = handleDBValidationErrors(error);
         }
         handleProdError(error, res);
     }
