@@ -1,10 +1,11 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, RequestHandler } from "express";
 import TourModel from "./../models/tour.model";
 import APIFeatures from "../utils/ApiFeatures";
 import catchAsync from "../utils/catchAsync";
+import AppError from "../utils/AppError";
 
 export default class TourController {
-    static findAll: Function = catchAsync(
+    static findAll: RequestHandler = catchAsync(
         async (req: Request, res: Response, next: NextFunction) => {
             const apiFeatures = new APIFeatures(TourModel.find(), req.query);
             const features = apiFeatures
@@ -25,9 +26,14 @@ export default class TourController {
         req.query.sort = "-ratingsAverage,price";
         next();
     }
-    static findOne: Function = catchAsync(
+    static findOne: RequestHandler = catchAsync(
         async (req: Request, res: Response, next: NextFunction) => {
             const data = await TourModel.findById(req.params.id);
+            if (!data) {
+                return next(
+                    new AppError(`No tour found with id: ${req.params.id}`, 404)
+                );
+            }
             return res.status(200).json({
                 status: "success",
                 results: 1,
@@ -35,9 +41,12 @@ export default class TourController {
             });
         }
     );
-    static createTour: Function = catchAsync(
+    static createTour: RequestHandler = catchAsync(
         async (req: Request, res: Response, next: NextFunction) => {
             const data = await TourModel.create(req.body);
+            if (!data) {
+                return next(new AppError("No tour found with this ID", 404));
+            }
             return res.status(201).json({
                 status: "success",
                 results: 1,
@@ -45,7 +54,7 @@ export default class TourController {
             });
         }
     );
-    static updateTour: Function = catchAsync(
+    static updateTour: RequestHandler = catchAsync(
         async (req: Request, res: Response, next: NextFunction) => {
             const data = await TourModel.findByIdAndUpdate(
                 req.params.id,
@@ -55,24 +64,31 @@ export default class TourController {
                     runValidators: true,
                 }
             );
+            if (!data) {
+                return next(
+                    new AppError(`No tour found with id: ${req.params.id}`, 404)
+                );
+            }
             return res
                 .status(200)
                 .json({ status: "success", results: 1, data });
         }
     );
-    static deleteTour: Function = catchAsync(
+    static deleteTour: RequestHandler = catchAsync(
         async (req: Request, res: Response, next: NextFunction) => {
             const data = await TourModel.findByIdAndDelete(req.params.id, {
                 new: true,
                 runValidators: true,
             });
-            if (data === null) {
-                throw new Error("Document not found.");
+            if (!data) {
+                return next(
+                    new AppError(`No tour found with id: ${req.params.id}`, 404)
+                );
             }
             return res.status(204).json({ status: "success", data: {} });
         }
     );
-    static getToursStats: Function = catchAsync(
+    static getToursStats: RequestHandler = catchAsync(
         async (req: Request, res: Response, next: NextFunction) => {
             const stats = await TourModel.aggregate([
                 {
