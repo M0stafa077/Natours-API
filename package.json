@@ -5,6 +5,7 @@
     "scripts": {
         "build": "tsc",
         "start": "node ./dist/index.js",
+        "start:prod": "NODE_ENV='prod' tsc-watch --onSuccess 'node ./dist/index.js'",
         "dev": "tsc-watch --onSuccess 'node ./dist/index.js'",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
