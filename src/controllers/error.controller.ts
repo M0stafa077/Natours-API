@@ -23,12 +23,15 @@ function handleDBValidationErrors(err: mongoose.Error.ValidationError) {
     const errors = Object.values(err.errors).map((el: any) => el.message);
     return new AppError(errors.join(". "), 400);
 }
+function handleFaliedLoginError(): AppError {
+    return new AppError("Please login first", 401);
+}
 function handleDevError(err: AppError, res: Response) {
     return res.status(err.statusCode).json({
+        message: err.myMessage,
         error: err,
         status: err.status,
         stack: err.stack,
-        message: err.message,
     });
 }
 function handleProdError(err: AppError, res: Response) {
@@ -56,14 +59,18 @@ export default function globalErrorHandler(
     err.status = err.status || "error";
     if (process.env.NODE_ENV === "dev") {
         handleDevError(err, res);
+        console.log("DEV ERROR 💥");
     } else if (process.env.NODE_ENV === "prod") {
+        console.log("PRODUCTION ERROR 💥");
         let error: any = { ...err };
         if (err.name === "CastError") {
             error = handleDBCastingError(error);
         } else if (err.code === 11000) {
             error = handleDBDuplicateEntry(error);
-        } else if (err?._message === "Validation failed") {
+        } else if (err?.myMessage === "Validation failed") {
             error = handleDBValidationErrors(error);
+        } else if (err?.myMessage === "login") {
+            error = handleFaliedLoginError();
         }
         handleProdError(error, res);
     }

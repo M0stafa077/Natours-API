@@ -2,11 +2,12 @@ import express, { NextFunction } from "express";
 import { Request, Response } from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-import toursRouter from "./routes/tour.routes";
 import path from "path";
 import morgan from "morgan";
 import globalErrorHandler from "./controllers/error.controller";
 import AppError from "./utils/AppError";
+import toursRouter from "./routes/tour.routes";
+import userRouter from "./routes/user.routes";
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 process.on("uncaughtException", (err: Error) => {
@@ -31,6 +32,10 @@ mongoose
     .catch((err) => console.log(err));
 
 app.use("/api/v1/tours", toursRouter);
+app.use("/api/v1/users", userRouter);
+app.get("/", (req, res) => {
+    res.status(200).json({ message: "Welcome to Natours-API" });
+});
 app.get("*", (req: Request, res: Response, next: NextFunction) => {
     next(new AppError("Can't find this page", 404));
 });

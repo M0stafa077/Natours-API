@@ -25,8 +25,6 @@ export default class APIFeatures<T> {
         } else {
             sortOptions = "createdAt";
         }
-        console.log(sortOptions);
-
         this.dbQuery = this.dbQuery.sort(sortOptions);
         return this;
     }
