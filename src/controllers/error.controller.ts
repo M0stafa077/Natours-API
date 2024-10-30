@@ -71,6 +71,8 @@ export default function globalErrorHandler(
             error = handleDBValidationErrors(error);
         } else if (err?.myMessage === "login") {
             error = handleFaliedLoginError();
+        } else if (err?.errName == "Not Authorized") {
+            error.message = "Not authorized: Insufficient permissions";
         }
         handleProdError(error, res);
     }

@@ -4,12 +4,17 @@ import AuthController from "../controllers/auth.controller";
 
 const router = Router();
 
+router.use(
+    AuthController.checkAuthenticationMiddlewre,
+    AuthController.checkAuthorizationMiddleware
+);
+
 router.post("/signup", AuthController.signup);
 router.post("/login", AuthController.login);
 
 router
     .route("/")
-    .get(AuthController.checkAuthorityMiddlewre, UserController.getAllUsers)
+    .get(UserController.getAllUsers)
     .post(UserController.createUser);
 
 router

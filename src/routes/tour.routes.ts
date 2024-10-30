@@ -1,5 +1,6 @@
 import { Router } from "express";
 import TourController from "../controllers/tour.controller";
+import AuthController from "../controllers/auth.controller";
 const router = Router();
 
 router
@@ -11,6 +12,10 @@ router
     .route("/:id")
     .get(TourController.findOne)
     .patch(TourController.updateTour)
-    .delete(TourController.deleteTour);
+    .delete(
+        AuthController.checkAuthenticationMiddlewre,
+        AuthController.checkAuthorizationMiddleware,
+        TourController.deleteTour
+    );
 
 export default router;

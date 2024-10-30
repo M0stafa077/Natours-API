@@ -38,7 +38,10 @@ export default class AuthController {
                     new AppError("Please provide email and password", 400)
                 );
             }
-            const user = await UserModel.findOne({ email }, "password");
+            const user = await UserModel.findOne({ email }, [
+                "password",
+                "role",
+            ]);
             if (!user || !(await bcrypt.compare(password, user.password))) {
                 return res.status(400).json({
                     status: "fail",
@@ -53,7 +56,7 @@ export default class AuthController {
             return res.status(200).json({ status: "success", accessToken });
         }
     );
-    static checkAuthorityMiddlewre = catchAsync(
+    static checkAuthenticationMiddlewre = catchAsync(
         async (req: Request, res: Response, next: NextFunction) => {
             let accessToken: string | undefined;
             if (
@@ -82,8 +85,29 @@ export default class AuthController {
             next();
         }
     );
+    static checkAuthorizationMiddleware = catchAsync(
+        async (req: Request, res: Response, next: NextFunction) => {
+            const accessToken: any = req.headers.authorization
+                ?.split(" ")
+                .at(1);
+            const payload = await verifyToken(accessToken);
+            if (payload?.role !== "admin") {
+                return next(
+                    new AppError(
+                        "Not authorized: Insufficient permissions",
+                        403,
+                        "Not Authorized"
+                    )
+                );
+            }
+            return next();
+        }
+    );
 }
-async function verifyToken(token: string, secret: string) {
+async function verifyToken(
+    token: string,
+    secret: string = process.env.JWT_SECRET + ""
+) {
     try {
         const payload = await new Promise((resolve, reject) => {
             jwt.verify(token, secret, (err, decoded) => {
@@ -91,7 +115,12 @@ async function verifyToken(token: string, secret: string) {
                 else resolve(decoded);
             });
         });
-        return payload;
+        return payload as {
+            id: string;
+            role: string;
+            iat: number;
+            exp: number;
+        };
     } catch (err) {
         return undefined;
     }
