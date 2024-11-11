@@ -4,6 +4,8 @@ import catchAsync from "../utils/catchAsync";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import AppError from "../utils/AppError";
+import nodemailer from "nodemailer";
+import * as crypto from "crypto";
 
 export default class AuthController {
     static signup: RequestHandler = catchAsync(
@@ -56,7 +58,7 @@ export default class AuthController {
             return res.status(200).json({ status: "success", accessToken });
         }
     );
-    static checkAuthenticationMiddlewre = catchAsync(
+    static authenticateMiddlewre = catchAsync(
         async (req: Request, res: Response, next: NextFunction) => {
             let accessToken: string | undefined;
             if (
@@ -85,7 +87,7 @@ export default class AuthController {
             next();
         }
     );
-    static checkAuthorizationMiddleware = catchAsync(
+    static authorizeMiddleware = catchAsync(
         async (req: Request, res: Response, next: NextFunction) => {
             const accessToken: any = req.headers.authorization
                 ?.split(" ")
@@ -101,6 +103,63 @@ export default class AuthController {
                 );
             }
             return next();
+        }
+    );
+    static forgotPassword = catchAsync(
+        async (req: Request, res: Response, next: NextFunction) => {
+            const email = req.body.email;
+            if (!email) {
+                return next(
+                    new AppError("Please provide the email address", 400)
+                );
+            }
+            const user = await UserModel.findOneAndUpdate(
+                { email },
+                { resetToken: null },
+                { new: true }
+            );
+            if (!user) {
+                return next(new AppError("User not found", 400));
+            }
+            const resetToken = user.generateResetToken();
+
+            await user.save({ validateBeforeSave: false });
+            await sendEmail(email, resetToken);
+            return res.json({
+                status: "success",
+                message: `A reset password email is sent to ${email}`,
+            });
+        }
+    );
+    static resetPassword = catchAsync(
+        async (req: Request, res: Response, next: NextFunction) => {
+            const newPassword = req.body.newPassword;
+            if (!newPassword) {
+                return next(
+                    new AppError("Please provide the new password", 400)
+                );
+            }
+            // Get the user with the provided reset token
+            const resetToken = crypto
+                .createHash("sha256")
+                .update(req.params.resetToken)
+                .digest("hex");
+            const user = await UserModel.findOne({
+                resetToken,
+                resetTokenExp: { $gt: Date.now() },
+            });
+            if (!user) {
+                return next(new AppError("Token is invalid", 400));
+            }
+            // reset the password and save it to db
+            user.password = newPassword;
+            user.resetToken = undefined;
+            user.resetTokenExp = undefined;
+            await user.save();
+            // Login the user
+            req.body.email = user.email;
+            req.body.password = newPassword;
+            return this.login(req, res, next);
         }
     );
 }
@@ -124,4 +183,21 @@ async function verifyToken(
     } catch (err) {
         return undefined;
     }
+}
+async function sendEmail(email: string, resetToken: string) {
+    const resetUrl = `${process.env.WEBSITE_BASE_URL}/reset-password/${resetToken}`;
+    const emailTransporter = nodemailer.createTransport({
+        host: process.env.MAILTRAP_HOST,
+        port: Number(process.env.MAILTRAP_PORT),
+        auth: {
+            user: process.env.MAILTRAP_USERNAME,
+            pass: process.env.MAILTRAP_PASS,
+        },
+    });
+    emailTransporter.sendMail({
+        from: process.env.MAILTRAP_EMAIL,
+        to: email,
+        subject: "Natours Password Reset",
+        text: `Visit the following link to reset your password: ${resetUrl}`,
+    });
 }
