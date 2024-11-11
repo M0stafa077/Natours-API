@@ -13,8 +13,8 @@ router
     .get(TourController.findOne)
     .patch(TourController.updateTour)
     .delete(
-        AuthController.checkAuthenticationMiddlewre,
-        AuthController.checkAuthorizationMiddleware,
+        AuthController.authenticateMiddlewre,
+        AuthController.authorizeMiddleware,
         TourController.deleteTour
     );
 
