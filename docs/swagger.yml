@@ -1,0 +1,274 @@
+openapi: 3.0.3
+info:
+    title: Natours API
+    description: API documentation for the Natours application.
+    version: 1.0.0
+    contact:
+        name: Mostafa
+        email: mostafa@example.com
+servers:
+    - url: http://localhost:PORT/api/v1
+      description: Development server
+
+tags:
+    - name: Tours
+      description: Operations related to tours
+    - name: Users
+      description: Operations related to users
+
+paths:
+    /tours:
+        get:
+            summary: Retrieve all tours
+            tags: [Tours]
+            parameters:
+                - in: query
+                  name: sort
+                  schema:
+                      type: string
+                  description: Field to sort results by
+                - in: query
+                  name: limit
+                  schema:
+                      type: integer
+                  description: Maximum number of results to retrieve
+                - in: query
+                  name: page
+                  schema:
+                      type: integer
+                  description: Page number for pagination
+            responses:
+                200:
+                    description: List of tours
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/Tour"
+
+        post:
+            summary: Create a new tour
+            tags: [Tours]
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/Tour"
+            responses:
+                201:
+                    description: Tour created successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Tour"
+
+    /tours/{id}:
+        get:
+            summary: Retrieve a tour by ID
+            tags: [Tours]
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: ID of the tour to retrieve
+            responses:
+                200:
+                    description: Tour details
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Tour"
+                404:
+                    description: Tour not found
+
+        patch:
+            summary: Update a tour by ID
+            tags: [Tours]
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: ID of the tour to update
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/Tour"
+            responses:
+                200:
+                    description: Tour updated successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Tour"
+                404:
+                    description: Tour not found
+
+        delete:
+            summary: Delete a tour by ID
+            tags: [Tours]
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: ID of the tour to delete
+            responses:
+                204:
+                    description: Tour deleted successfully
+                404:
+                    description: Tour not found
+
+    /users:
+        get:
+            summary: Retrieve all users
+            tags: [Users]
+            parameters:
+                - in: query
+                  name: sort
+                  schema:
+                      type: string
+                  description: Field to sort results by
+                - in: query
+                  name: limit
+                  schema:
+                      type: integer
+                  description: Maximum number of results to retrieve
+                - in: query
+                  name: page
+                  schema:
+                      type: integer
+                  description: Page number for pagination
+            responses:
+                200:
+                    description: List of users
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/User"
+
+        post:
+            summary: Create a new user
+            tags: [Users]
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/User"
+            responses:
+                201:
+                    description: User created successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/User"
+
+    /users/{id}:
+        get:
+            summary: Retrieve a user by ID
+            tags: [Users]
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: ID of the user to retrieve
+            responses:
+                200:
+                    description: User details
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/User"
+                404:
+                    description: User not found
+
+        patch:
+            summary: Update a user by ID
+            tags: [Users]
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: ID of the user to update
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/User"
+            responses:
+                200:
+                    description: User updated successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/User"
+                404:
+                    description: User not found
+
+        delete:
+            summary: Delete a user by ID
+            tags: [Users]
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: ID of the user to delete
+            responses:
+                204:
+                    description: User deleted successfully
+                404:
+                    description: User not found
+
+components:
+    schemas:
+        Tour:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                duration:
+                    type: integer
+                maxGroupSize:
+                    type: integer
+                difficulty:
+                    type: string
+                ratingsAverage:
+                    type: number
+                price:
+                    type: number
+                summary:
+                    type: string
+
+        User:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                email:
+                    type: string
+                password:
+                    type: string
+                photo:
+                    type: string

@@ -8,7 +8,12 @@ import globalErrorHandler from "./controllers/error.controller";
 import AppError from "./utils/AppError";
 import toursRouter from "./routes/tour.routes";
 import userRouter from "./routes/user.routes";
+import swaggerUi from "swagger-ui-express";
+import YAML from "yamljs";
+
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
+
+const swaggerDocument = YAML.load(path.join(__dirname, "../docs/swagger.yml"));
 
 process.on("uncaughtException", (err: Error) => {
     console.log("UNHANDLED REJECTION ❗❗");
@@ -16,6 +21,8 @@ process.on("uncaughtException", (err: Error) => {
     process.exit(1);
 });
 const app = express();
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 app.use(express.json());
 if (process.env.NODE_ENV === "dev") {
     app.use(morgan("dev"));

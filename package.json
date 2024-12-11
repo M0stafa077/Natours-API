@@ -5,7 +5,7 @@
     "scripts": {
         "build": "tsc",
         "start": "node ./dist/index.js",
-        "start:prod": "NODE_ENV='prod' tsc-watch --onSuccess 'node ./dist/index.js'",
+        "start:prod": "NODE_ENV='prod' tsc-watch --onSuccess 'node ./dist/src/index.js'",
         "dev": "tsc-watch --onSuccess 'node ./dist/index.js'",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
@@ -17,7 +17,6 @@
         "@types/bcrypt": "^5.0.2",
         "@types/bcryptjs": "^2.4.6",
         "@types/dotenv": "^6.1.1",
-        "@types/express": "^4.17.21",
         "@types/jsonwebtoken": "^9.0.7",
         "@types/mongoose": "^5.11.96",
         "@types/validator": "^13.12.2",
@@ -29,13 +28,21 @@
         "mongoose": "^8.7.2",
         "nodemailer": "^6.9.16",
         "slugify": "^1.6.6",
-        "validator": "^13.12.0"
+        "swagger-jsdoc": "^6.2.8",
+        "swagger-ui-express": "^5.0.1",
+        "validator": "^13.12.0",
+        "yamljs": "^0.3.0"
     },
     "devDependencies": {
+        "@types/express": "^5.0.0",
         "@types/morgan": "^1.9.9",
+        "@types/node": "^22.10.2",
         "@types/nodemailer": "^6.4.16",
+        "@types/swagger-ui-express": "^4.1.7",
+        "@types/yamljs": "^0.2.34",
         "morgan": "^1.10.0",
         "nodemon": "^3.1.7",
-        "tsc-watch": "^6.2.0"
+        "tsc-watch": "^6.2.0",
+        "typescript": "^5.7.2"
     }
 }
